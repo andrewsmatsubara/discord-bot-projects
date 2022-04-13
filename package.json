@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/andynosaurus/discord-bot-projects#readme",
   "dependencies": {
+    "discord.js": "^13.6.0",
     "dotenv": "^16.0.0"
   }
 }
