@@ -14,6 +14,18 @@ const getCatPicture = async () => {
   return url;
 }
 
+const getMtgCard = async () => {
+  try {
+    const result = await fetch(`https://api.scryfall.com/cards/random`);
+    const json = await result.json();
+    const imageUrl = await json.image_uris.normal;
+
+    return imageUrl;
+  } catch (e) {
+    console.log(e.message);
+  }
+}
+
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`)
 });
@@ -29,6 +41,10 @@ client.on('messageCreate', async msg => {
     msg.channel.send({
       content: 'Um gatinho para alegrar o seu dia!',
       files: [await getCatPicture()]
+    });
+  } else if (msg.content === '!randomCard') {
+    msg.channel.send({
+      files: [await getMtgCard()]
     });
   }
 });
