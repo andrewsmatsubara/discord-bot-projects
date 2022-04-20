@@ -14,10 +14,29 @@ const getCatPicture = async () => {
   return url;
 }
 
-const getMtgCard = async () => {
+const getMtgRandomCard = async () => {
   try {
     const result = await fetch(`https://api.scryfall.com/cards/random`);
     const json = await result.json();
+    const imageUrl = await json.image_uris.normal;
+
+    return imageUrl;
+  } catch (e) {
+    console.log(e.message);
+  }
+}
+
+const getMtgCardByName = async (name) => {
+  try {
+    const result = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${name}`);
+
+    const json = await result.json();
+
+    console.log(json);
+
+    if (json.object === 'error') {
+      return json.details;
+    }
     const imageUrl = await json.image_uris.normal;
 
     return imageUrl;
@@ -44,8 +63,22 @@ client.on('messageCreate', async msg => {
     });
   } else if (msg.content === '!randomCard') {
     msg.channel.send({
-      files: [await getMtgCard()]
+      files: [await getMtgRandomCard()]
     });
+  } else if (msg.content.includes('!card', 0)) {
+    const name = msg.content.slice(6);
+
+    console.log(name)
+
+    const card = await getMtgCardByName(name);
+
+    if (name === '' || card.includes('No cards found matching')) {
+      msg.channel.send(card);
+    } else {
+      msg.channel.send({
+        files: [card]
+      });
+    }
   }
 });
 
