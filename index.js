@@ -45,6 +45,25 @@ const getMtgCardByName = async (name) => {
   }
 }
 
+const getMtgFormatsByCard = async (name) => {
+  try {
+    const result = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${name}`);
+
+    const json = await result.json();
+
+    if (json.object === 'error') {
+      return json.details;
+    }
+
+    const formats = await json.legalities;
+    const toString = await JSON.stringify(formats);
+
+    return toString;
+  } catch (e) {
+    console.log(e.message);
+  }
+}
+
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`)
 });
@@ -77,6 +96,17 @@ client.on('messageCreate', async msg => {
     } else {
       msg.channel.send({
         files: [card]
+      });
+    }
+  } else if (msg.content.includes('!formats', 0)) {
+    const name = msg.content.slice(9);
+    const card = await getMtgFormatsByCard(name);
+
+    if (name === '' || card.includes('No cards found matching') || card.includes('Add more words to refine your search')) {
+      msg.channel.send(card);
+    } else {
+      msg.channel.send({
+        content: card
       });
     }
   }
