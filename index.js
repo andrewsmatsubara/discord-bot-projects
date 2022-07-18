@@ -1,8 +1,12 @@
-require('dotenv').config();
-
 const fetch = require('node-fetch');
 
+const keepAlive = require('./server');
+
 const Discord = require('discord.js');
+
+const Database = require("@replit/database");
+
+const db = new Database();
 
 const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
 
@@ -32,14 +36,15 @@ const getMtgCardByName = async (name) => {
 
     const json = await result.json();
 
-    console.log(json);
+    if (json.object === 'card') {
+    const imageUrl = await json.image_uris.normal;
+
+    return imageUrl;
+    }
 
     if (json.object === 'error') {
       return json.details;
     }
-    const imageUrl = await json.image_uris.normal;
-
-    return imageUrl;
   } catch (e) {
     console.log(e.message);
   }
@@ -56,7 +61,7 @@ const getMtgFormatsByCard = async (name) => {
     }
 
     const formats = await json.legalities;
-    const toString = await JSON.stringify(formats);
+    const toString = JSON.stringify(formats);
 
     return toString;
   } catch (e) {
@@ -86,12 +91,9 @@ client.on('messageCreate', async msg => {
     });
   } else if (msg.content.includes('!card', 0)) {
     const name = msg.content.slice(6);
-
-    console.log(name)
-
     const card = await getMtgCardByName(name);
 
-    if (name === '' || card.includes('No cards found matching')) {
+    if (name === '' || card.includes('No cards found matching') || card.includes('Add more words to refine your search')) {
       msg.channel.send(card);
     } else {
       msg.channel.send({
@@ -111,5 +113,7 @@ client.on('messageCreate', async msg => {
     }
   }
 });
+
+keepAlive();
 
 client.login(process.env.TOKEN);
